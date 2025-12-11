@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Monitor all your investments and watch your wealth grow with compound interest calculations">
+    <meta name="theme-color" content="#218090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Savings Tracker">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23218090' width='192' height='192'/><text x='96' y='120' font-size='100' font-weight='bold' text-anchor='middle' fill='white'>💰</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23218090' width='180' height='180' rx='40'/><text x='90' y='115' font-size='90' font-weight='bold' text-anchor='middle' fill='white'>💰</text></svg>">
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Financial%20Savings%20Tracker%22,%22short_name%22:%22Savings%20Tracker%22,%22start_url%22:%22./%22,%22display%22:%22standalone%22,%22background_color%22:%22%23ffffff%22,%22theme_color%22:%22%23218090%22,%22scope%22:%22./%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 192 192%27><rect fill=%27%23218090%27 width=%27192%27 height=%27192%27/><text x=%2796%27 y=%27120%27 font-size=%27100%27 font-weight=%27bold%27 text-anchor=%27middle%27 fill=%27white%27>💰</text></svg>%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22,%22purpose%22:%22any%22}]}">
+    <title>Financial Savings Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --color-bg-primary: #fafaf8;
+            --color-bg-secondary: #f5f5f5;
+            --color-surface: #ffffff;
+            --color-text-primary: #1f2121;
+            --color-text-secondary: #626c7c;
+            --color-primary: #218090;
+            --color-primary-hover: #1d7280;
+            --color-success: #22c55e;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+            --color-border: rgba(94, 82, 64, 0.15);
+            --color-input-bg: #ffffff;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius-base: 8px;
+            --spacing-8: 8px;
+            --spacing-12: 12px;
+            --spacing-16: 16px;
+            --spacing-20: 20px;
+            --spacing-24: 24px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-bg-primary: #1f2121;
+                --color-bg-secondary: #2a2a2a;
+                --color-surface: #262626;
+                --color-text-primary: #f5f5f5;
+                --color-text-secondary: #a7a9a9;
+                --color-input-bg: #333333;
+                --color-border: rgba(167, 169, 169, 0.2);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-20);
+        }
+
+        header {
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--spacing-20);
+            margin-bottom: var(--spacing-20);
+            border-radius: var(--radius-base);
+        }
+
+        h1 {
+            margin: 0 0 var(--spacing-8) 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .header-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--spacing-12);
+            margin-bottom: var(--spacing-20);
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-surface);
+            padding: var(--spacing-16);
+            border-radius: var(--radius-base);
+        }
+
+        .tab-btn {
+            padding: var(--spacing-12) var(--spacing-16);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
+            transition: all 150ms ease;
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-btn:hover {
+            color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-16);
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: var(--spacing-8);
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: var(--spacing-12);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            font-size: 14px;
+            background: var(--color-input-bg);
+            color: var(--color-text-primary);
+            transition: border-color 150ms ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(33, 128, 144, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-16);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-12) var(--spacing-20);
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--color-bg-secondary);
+            color: var(--color-text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-border);
+        }
+
+        .btn-danger {
+            background: var(--color-error);
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        .btn-small {
+            padding: var(--spacing-8) var(--spacing-12);
+            font-size: 12px;
+        }
+
+        .investment-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: var(--spacing-16);
+            margin-bottom: var(--spacing-16);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-12);
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .card-type {
+            display: inline-block;
+            background: rgba(33, 128, 144, 0.1);
+            color: var(--color-primary);
+            padding: var(--spacing-4) var(--spacing-8);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-12);
+            margin-bottom: var(--spacing-12);
+        }
+
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card-stat {
+            padding: var(--spacing-12);
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-base);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .stat-profit {
+            color: var(--color-success);
+        }
+
+        .stat-loss {
+            color: var(--color-error);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-16);
+            margin-bottom: var(--spacing-20);
+        }
+
+        .stat-box {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: var(--spacing-20);
+        }
+
+        .chart-container {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: var(--spacing-20);
+            margin-bottom: var(--spacing-20);
+            position: relative;
+            height: 400px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-24);
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: var(--spacing-12);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--color-surface);
+            border-radius: var(--radius-base);
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+
+        thead {
+            background: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        th {
+            padding: var(--spacing-12);
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+
+        td {
+            padding: var(--spacing-12);
+            border-bottom: 1px solid var(--color-border);
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-8);
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            color: var(--color-primary);
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            background-color: var(--color-text-primary);
+            color: var(--color-surface);
+            text-align: center;
+            border-radius: 4px;
+            padding: var(--spacing-8);
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            width: 120px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 300ms;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* PWA Mobile Optimizations */
+        @media (max-width: 600px) {
+            .container {
+                padding: var(--spacing-12);
+            }
+
+            header {
+                padding: var(--spacing-12);
+                margin-bottom: var(--spacing-12);
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+                padding: var(--spacing-12);
+            }
+
+            .tab-btn {
+                padding: var(--spacing-8) var(--spacing-12);
+                font-size: 13px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: var(--spacing-12);
+            }
+
+            .stat-box {
+                padding: var(--spacing-16);
+            }
+
+            .chart-container {
+                height: 300px;
+                padding: var(--spacing-12);
+            }
+
+            .form-control {
+                font-size: 16px;
+            }
+
+            .btn {
+                padding: var(--spacing-10) var(--spacing-16);
+                font-size: 14px;
+                width: 100%;
+            }
+        }
+
+        /* Safe area support for notched devices */
+        body {
+            padding: max(0px, env(safe-area-inset-top)) max(0px, env(safe-area-inset-right)) max(0px, env(safe-area-inset-bottom)) max(0px, env(safe-area-inset-left));
+        }
+
+        /* Prevent zoom on input focus */
+        input, select, textarea {
+            font-size: 16px;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Install prompt styling */
+        .install-banner {
+            display: none;
+            background: var(--color-primary);
+            color: white;
+            padding: var(--spacing-12) var(--spacing-16);
+            text-align: center;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-radius: var(--radius-base);
+            margin-bottom: var(--spacing-12);
+        }
+
+        .install-banner.show {
+            display: block;
+        }
+
+        .install-banner button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: var(--spacing-6) var(--spacing-12);
+            border-radius: 4px;
+            margin-left: var(--spacing-8);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .install-banner button:active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="installBanner" class="install-banner">
+        📱 Add to home screen for quick access
+        <button onclick="installApp()">Install</button>
+        <button onclick="dismissInstall()" style="background: rgba(255, 255, 255, 0.1); margin-left: 8px;">Dismiss</button>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>💰 Financial Savings Tracker</h1>
+            <p class="header-subtitle">Monitor all your investments and watch your wealth grow with compound interest calculations</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('add')">Add Investment</button>
+            <button class="tab-btn" onclick="switchTab('investments')">My Investments</button>
+            <button class="tab-btn" onclick="switchTab('calculator')">Calculator</button>
+        </div>
+
+        <!-- DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Total Invested</div>
+                    <div class="stat-value">₹<span id="totalInvested">0</span></div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Current Value</div>
+                    <div class="stat-value">₹<span id="totalValue">0</span></div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Total Profit/Loss</div>
+                    <div class="stat-value" id="totalProfit">₹0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Profit %</div>
+                    <div class="stat-value" id="profitPercent">0%</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="growthChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="investmentTypeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- ADD INVESTMENT TAB -->
+        <div id="add" class="tab-content">
+            <div class="investment-card">
+                <h3 style="margin-top: 0;">Add New Investment</h3>
+
+                <div class="form-group">
+                    <label class="form-label">Investment Type</label>
+                    <select class="form-control" id="investmentType" onchange="updateRateHint()">
+                        <option value="ppf">PPF (Public Provident Fund) - ~7-8%</option>
+                        <option value="rd">Recurring Deposit (RD) - ~6-7%</option>
+                        <option value="sip">Mutual Fund SIP - ~10-16%</option>
+                        <option value="nsc">NSC (National Savings Certificate) - ~8.2%</option>
+                        <option value="gold">Digital Gold - ~8-12%</option>
+                        <option value="fd">Fixed Deposit (FD) - ~6-7%</option>
+                        <option value="other">Other - Custom Rate</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Monthly Investment (₹)</label>
+                        <input type="number" class="form-control" id="monthlyAmount" placeholder="e.g., 500" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Annual Interest Rate (%)</label>
+                        <input type="number" class="form-control" id="interestRate" placeholder="e.g., 7.5" step="0.1" min="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Duration (Years)</label>
+                        <input type="number" class="form-control" id="duration" placeholder="e.g., 5" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="startDate">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Investment Name (Optional)</label>
+                    <input type="text" class="form-control" id="investmentName" placeholder="e.g., My PPF Account">
+                </div>
+
+                <button class="btn btn-primary" onclick="addInvestment()">Add Investment</button>
+            </div>
+        </div>
+
+        <!-- INVESTMENTS LIST TAB -->
+        <div id="investments" class="tab-content">
+            <div id="investmentsList"></div>
+        </div>
+
+        <!-- CALCULATOR TAB -->
+        <div id="calculator" class="tab-content">
+            <div class="investment-card">
+                <h3 style="margin-top: 0;">Compound Interest Calculator</h3>
+                <p style="color: var(--color-text-secondary); font-size: 14px;">See how your money grows over time with compound interest</p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Principal Amount (₹)</label>
+                        <input type="number" class="form-control" id="calcPrincipal" placeholder="10000" min="0" onchange="calculateCompound()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Annual Rate (%)</label>
+                        <input type="number" class="form-control" id="calcRate" placeholder="7.5" step="0.1" min="0" onchange="calculateCompound()">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Time Period (Years)</label>
+                        <input type="number" class="form-control" id="calcTime" placeholder="5" min="1" max="100" onchange="calculateCompound()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Compounding Frequency</label>
+                        <select class="form-control" id="calcFreq" onchange="calculateCompound()">
+                            <option value="1">Annually</option>
+                            <option value="2">Semi-Annually</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Principal</div>
+                        <div class="stat-value">₹<span id="calcPrincipalResult">0</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Interest Earned</div>
+                        <div class="stat-value stat-profit">₹<span id="calcInterestResult">0</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Final Amount</div>
+                        <div class="stat-value">₹<span id="calcFinalResult">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="calculatorChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let investments = JSON.parse(localStorage.getItem('investments')) || [];
+        let growthChart, investmentTypeChart, calculatorChart;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'dashboard') {
+                setTimeout(() => initGrowthChart(), 100);
+            } else if (tabName === 'calculator') {
+                setTimeout(() => initCalculatorChart(), 100);
+            }
+        }
+
+        function updateRateHint() {
+            const type = document.getElementById('investmentType').value;
+            const rateMap = {
+                'ppf': 7.5,
+                'rd': 6.5,
+                'sip': 12,
+                'nsc': 8.2,
+                'gold': 10,
+                'fd': 6.5,
+                'other': 7
+            };
+            document.getElementById('interestRate').value = rateMap[type];
+        }
+
+        function addInvestment() {
+            const type = document.getElementById('investmentType').value;
+            const monthly = parseFloat(document.getElementById('monthlyAmount').value);
+            const rate = parseFloat(document.getElementById('interestRate').value);
+            const duration = parseInt(document.getElementById('duration').value);
+            const startDate = document.getElementById('startDate').value;
+            const name = document.getElementById('investmentName').value || getTypeName(type);
+
+            if (!monthly || !rate || !duration || !startDate) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            const id = Date.now();
+            investments.push({
+                id,
+                type,
+                name,
+                monthlyAmount: monthly,
+                interestRate: rate,
+                duration,
+                startDate,
+                createdAt: new Date().toISOString()
+            });
+
+            localStorage.setItem('investments', JSON.stringify(investments));
+            clearAddForm();
+            switchTab('investments');
+            displayInvestments();
+            updateDashboard();
+        }
+
+        function clearAddForm() {
+            document.getElementById('monthlyAmount').value = '';
+            document.getElementById('interestRate').value = '';
+            document.getElementById('duration').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('investmentName').value = '';
+        }
+
+        function getTypeName(type) {
+            const names = {
+                'ppf': 'PPF Account',
+                'rd': 'Recurring Deposit',
+                'sip': 'Mutual Fund SIP',
+                'nsc': 'NSC',
+                'gold': 'Digital Gold',
+                'fd': 'Fixed Deposit',
+                'other': 'Investment'
+            };
+            return names[type] || 'Investment';
+        }
+
+        function calculateFutureValue(monthly, rate, years) {
+            const months = years * 12;
+            const monthlyRate = rate / 100 / 12;
+            if (monthlyRate === 0) return monthly * months;
+            return monthly * (((1 + monthlyRate) ** months - 1) / monthlyRate);
+        }
+
+        function calculateTotalInvested(monthly, years) {
+            return monthly * years * 12;
+        }
+
+        function deleteInvestment(id) {
+            if (confirm('Are you sure you want to delete this investment?')) {
+                investments = investments.filter(inv => inv.id !== id);
+                localStorage.setItem('investments', JSON.stringify(investments));
+                displayInvestments();
+                updateDashboard();
+            }
+        }
+
+        function displayInvestments() {
+            const container = document.getElementById('investmentsList');
+            if (investments.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><p>No investments yet. Start by adding one!</p></div>';
+                return;
+            }
+
+            let html = '';
+            investments.forEach(inv => {
+                const future = calculateFutureValue(inv.monthlyAmount, inv.interestRate, inv.duration);
+                const invested = calculateTotalInvested(inv.monthlyAmount, inv.duration);
+                const profit = future - invested;
+                const profitPercent = ((profit / invested) * 100).toFixed(2);
+
+                html += `
+                    <div class="investment-card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">${inv.name}</h3>
+                                <span class="card-type">${getTypeName(inv.type)}</span>
+                            </div>
+                            <button class="btn btn-danger btn-small" onclick="deleteInvestment(${inv.id})">Delete</button>
+                        </div>
+                        <div class="card-grid">
+                            <div class="card-stat">
+                                <div class="stat-label">Monthly Investment</div>
+                                <div class="stat-value">₹${inv.monthlyAmount.toLocaleString()}</div>
+                            </div>
+                            <div class="card-stat">
+                                <div class="stat-label">Interest Rate</div>
+                                <div class="stat-value">${inv.interestRate}%</div>
+                            </div>
+                            <div class="card-stat">
+                                <div class="stat-label">Duration</div>
+                                <div class="stat-value">${inv.duration} Years</div>
+                            </div>
+                            <div class="card-stat">
+                                <div class="stat-label">Start Date</div>
+                                <div class="stat-value">${new Date(inv.startDate).toLocaleDateString()}</div>
+                            </div>
+                            <div class="card-stat">
+                                <div class="stat-label">Total Invested</div>
+                                <div class="stat-value">₹${invested.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                            </div>
+                            <div class="card-stat">
+                                <div class="stat-label">Future Value</div>
+                                <div class="stat-value">₹${future.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                            </div>
+                            <div class="card-stat">
+                                <div class="stat-label">Profit/Interest</div>
+                                <div class="stat-value stat-profit">₹${profit.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                            </div>
+                            <div class="card-stat">
+                                <div class="stat-label">Return %</div>
+                                <div class="stat-value stat-profit">${profitPercent}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function updateDashboard() {
+            let totalInvested = 0;
+            let totalValue = 0;
+
+            investments.forEach(inv => {
+                const future = calculateFutureValue(inv.monthlyAmount, inv.interestRate, inv.duration);
+                const invested = calculateTotalInvested(inv.monthlyAmount, inv.duration);
+                totalInvested += invested;
+                totalValue += future;
+            });
+
+            const profit = totalValue - totalInvested;
+            const profitPercent = totalInvested > 0 ? ((profit / totalInvested) * 100).toFixed(2) : 0;
+
+            document.getElementById('totalInvested').textContent = totalInvested.toLocaleString(undefined, {maximumFractionDigits: 0});
+            document.getElementById('totalValue').textContent = totalValue.toLocaleString(undefined, {maximumFractionDigits: 0});
+
+            const profitElement = document.getElementById('totalProfit');
+            profitElement.textContent = '₹' + profit.toLocaleString(undefined, {maximumFractionDigits: 0});
+            profitElement.className = 'stat-value ' + (profit >= 0 ? 'stat-profit' : 'stat-loss');
+
+            const percentElement = document.getElementById('profitPercent');
+            percentElement.textContent = profitPercent + '%';
+            percentElement.className = 'stat-value ' + (profitPercent >= 0 ? 'stat-profit' : 'stat-loss');
+        }
+
+        function initGrowthChart() {
+            if (investments.length === 0) return;
+
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            const years = Math.max(...investments.map(inv => inv.duration));
+            const datasets = [];
+
+            const colors = ['#218090', '#f59e0b', '#ef4444', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
+            let colorIndex = 0;
+
+            investments.forEach(inv => {
+                const labels = [];
+                const data = [];
+
+                for (let year = 0; year <= inv.duration; year++) {
+                    labels.push(`Year ${year}`);
+                    const value = calculateFutureValue(inv.monthlyAmount, inv.interestRate, year);
+                    data.push(value);
+                }
+
+                datasets.push({
+                    label: inv.name,
+                    data: data,
+                    borderColor: colors[colorIndex % colors.length],
+                    backgroundColor: colors[colorIndex % colors.length] + '20',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                });
+
+                colorIndex++;
+            });
+
+            if (growthChart) growthChart.destroy();
+
+            growthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: Math.max(...investments.map(inv => inv.duration + 1))}, (_, i) => `Year ${i}`),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Investment Growth Over Time',
+                            font: {size: 16, weight: '600'}
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => '₹' + (value / 1000).toFixed(0) + 'k'
+                            }
+                        }
+                    }
+                }
+            });
+
+            const typeCtx = document.getElementById('investmentTypeChart').getContext('2d');
+            const typeLabels = investments.map(inv => inv.name);
+            const typeValues = investments.map(inv => calculateTotalInvested(inv.monthlyAmount, inv.duration));
+
+            if (investmentTypeChart) investmentTypeChart.destroy();
+
+            investmentTypeChart = new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeValues,
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Investment Distribution (Total Invested)',
+                            font: {size: 16, weight: '600'}
+                        },
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function calculateCompound() {
+            const principal = parseFloat(document.getElementById('calcPrincipal').value) || 0;
+            const rate = parseFloat(document.getElementById('calcRate').value) || 0;
+            const time = parseInt(document.getElementById('calcTime').value) || 0;
+            const freq = parseInt(document.getElementById('calcFreq').value) || 1;
+
+            const amount = principal * Math.pow(1 + (rate / 100 / freq), freq * time);
+            const interest = amount - principal;
+
+            document.getElementById('calcPrincipalResult').textContent = principal.toLocaleString();
+            document.getElementById('calcInterestResult').textContent = interest.toLocaleString(undefined, {maximumFractionDigits: 0});
+            document.getElementById('calcFinalResult').textContent = amount.toLocaleString(undefined, {maximumFractionDigits: 0});
+
+            initCalculatorChart();
+        }
+
+        function initCalculatorChart() {
+            const principal = parseFloat(document.getElementById('calcPrincipal').value) || 0;
+            const rate = parseFloat(document.getElementById('calcRate').value) || 0;
+            const time = parseInt(document.getElementById('calcTime').value) || 1;
+            const freq = parseInt(document.getElementById('calcFreq').value) || 1;
+
+            if (principal === 0) return;
+
+            const ctx = document.getElementById('calculatorChart').getContext('2d');
+            const labels = [];
+            const principalData = [];
+            const interestData = [];
+
+            for (let year = 0; year <= time; year++) {
+                labels.push(`Year ${year}`);
+                const amount = principal * Math.pow(1 + (rate / 100 / freq), freq * year);
+                principalData.push(principal);
+                interestData.push(amount - principal);
+            }
+
+            if (calculatorChart) calculatorChart.destroy();
+
+            calculatorChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Principal',
+                            data: principalData,
+                            backgroundColor: '#218090',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Interest Earned',
+                            data: interestData,
+                            backgroundColor: '#22c55e',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'x',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Principal vs Interest Growth',
+                            font: {size: 16, weight: '600'}
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: {
+                                callback: (value) => '₹' + (value / 1000).toFixed(0) + 'k'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // PWA Service Worker Registration
+        let deferredPrompt;
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:application/javascript,' + encodeURIComponent(`
+                const CACHE_NAME = 'savings-tracker-v1';
+                const urlsToCache = [
+                    '/',
+                    '/index.html',
+                    'https://cdn.jsdelivr.net/npm/chart.js'
+                ];
+
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME).then(cache => {
+                            return cache.addAll(urlsToCache).catch(() => {});
+                        })
+                    );
+                    self.skipWaiting();
+                });
+
+                self.addEventListener('activate', event => {
+                    event.waitUntil(
+                        caches.keys().then(cacheNames => {
+                            return Promise.all(
+                                cacheNames.map(cacheName => {
+                                    if (cacheName !== CACHE_NAME) {
+                                        return caches.delete(cacheName);
+                                    }
+                                })
+                            );
+                        })
+                    );
+                    self.clients.claim();
+                });
+
+                self.addEventListener('fetch', event => {
+                    if (event.request.method !== 'GET') return;
+                    
+                    event.respondWith(
+                        caches.match(event.request).then(response => {
+                            return response || fetch(event.request).then(response => {
+                                return caches.open(CACHE_NAME).then(cache => {
+                                    cache.put(event.request, response.clone());
+                                    return response;
+                                });
+                            }).catch(() => {
+                                return new Response('Offline - data cached', {status: 503});
+                            });
+                        })
+                    );
+                });
+            `)).catch(err => console.log('SW registration failed:', err));
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBanner').classList.add('show');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            document.getElementById('installBanner').classList.remove('show');
+            console.log('PWA was installed');
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installBanner').classList.remove('show');
+                });
+            }
+        }
+
+        function dismissInstall() {
+            document.getElementById('installBanner').classList.remove('show');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = today;
+            updateRateHint();
+            displayInvestments();
+            updateDashboard();
+
+            // Lock screen orientation on mobile for better UX
+            if (window.screen && window.screen.orientation) {
+                try {
+                    window.screen.orientation.lock('portrait').catch(() => {});
+                } catch (e) {}
+            }
+        });
+
+        // Handle visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                updateDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
